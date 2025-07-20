@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>বাংলা PDF থেকে টেক্সট কনভার্টার</title>
+    <link href="https://fonts.googleapis.com/css2?family=Siyam+Rupali&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Siyam Rupali', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            backgroundCDC: #218838;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+        #preview {
+            margin-top: 20px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>বাংলা PDF থেকে টেক্সট কনভার্টার</h1>
+        <p>আপনার PDF ফাইল আপলোড করুন এবং বাংলা টেক্সট বের করুন</p>
+        <input type="file" id="pdfFile" accept=".pdf">
+        <button onclick="convertPDF()">টেক্সট বের করুন</button>
+        <button onclick="copyText()">টেক্সট কপি করুন</button>
+        <button onclick="downloadText()">টেক্সট ডাউনলোড করুন</button>
+        <div id="preview"></div>
+        <div id="output">এখানে বের করা টেক্সট দেখানো হবে...</div>
+    </div>
+
+    <!-- pdf.js লাইব্রেরি -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
+    <script>
+        // pdf.js কনফিগারেশন
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.worker.min.js';
+
+        async function convertPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const outputDiv = document.getElementById('output');
+            const previewDiv = document.getElementById('preview');
+
+            if (!fileInput.files.length) {
+                alert('দয়া করে একটি PDF ফাইল নির্বাচন করুন!');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function () {
+                const typedArray = new Uint8Array(this.result);
+                const pdf = await pdfjsLib.getDocument(typedArray).promise;
+                let text = '';
+
+                // প্রতিটি পেজ থেকে টেক্সট বের করা
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const content = await page.getTextContent();
+                    content.items.forEach(item => {
+                        text += item.str + '\n';
+                    });
+
+                    // PDF প্রিভিউ রেন্ডার করা
+                    const viewport = page.getViewport({ scale: 1 });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    previewDiv.appendChild(canvas);
+
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+                }
+
+                outputDiv.textContent = text || 'কোনো টেক্সট পাওয়া যায়নি!';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function copyText() {
+            const outputDiv = document.getElementById('output');
+            const text = outputDiv.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('টেক্সট কপি করা হয়েছে!');
+            });
+        }
+
+        function downloadText() {
+            const outputDiv = document.getElementById('output');
+            const text = outputDiv.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'converted_text.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
