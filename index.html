@@ -16,31 +16,38 @@
     <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg px-6 pt-4 pb-6">
       <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mb-4">আত্মীয়-স্বজনের তালিকা</h2>
       <div class="grid grid-cols-1 gap-3 max-h-[500px] overflow-y-auto pr-2">
-        <!-- Relative Fields -->
-        <script>
-          const relatives = [
-            { label: 'স্বামী', id: 'husband', max: 1 },
-            { label: 'স্ত্রী', id: 'wives', max: 4 },
-            { label: 'পুত্র', id: 'sons' },
-            { label: 'কন্যা', id: 'daughters' },
-            { label: 'মাতা', id: 'mother' },
-            { label: 'পিতা', id: 'father' },
-            { label: 'দাদা', id: 'grandfather' },
-            { label: 'দাদি', id: 'grandmother' },
-            { label: 'নানি', id: 'nani' },
-            { label: 'সহোদর ভাই', id: 'brother_full' },
-            { label: 'সহোদর বোন', id: 'sister_full' },
-            { label: 'সৎ ভাই (বৈমাত্রেয়)', id: 'brother_uterine' },
-            { label: 'সৎ বোন (বৈমাত্রেয়)', id: 'sister_uterine' },
-            { label: 'সৎ ভাই (বৈপিত্রেয়)', id: 'brother_consanguine' },
-            { label: 'সৎ বোন (বৈপিত্রেয়)', id: 'sister_consanguine' },
-            { label: 'আপন চাচা', id: 'paternal_uncle' },
-            { label: 'সৎ চাচা', id: 'step_uncle' },
-            { label: 'আপন চাচার পুত্র', id: 'uncle_son' },
-            { label: 'সৎ চাচার পুত্র', id: 'step_uncle_son' }
-          ];
-        </script>
-        <div id="relatives-container"></div>
+        <div class="flex justify-between items-center">
+          <label>স্বামী</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjust('husband', -1, 1)" class="bg-green-200 px-2 rounded">-</button>
+            <input id="husband" type="number" value="0" class="w-12 text-center border rounded" readonly>
+            <button onclick="adjust('husband', 1, 1)" class="bg-green-200 px-2 rounded">+</button>
+          </div>
+        </div>
+        <div class="flex justify-between items-center">
+          <label>স্ত্রী</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjust('wives', -1, 4)" class="bg-green-200 px-2 rounded">-</button>
+            <input id="wives" type="number" value="0" class="w-12 text-center border rounded" readonly>
+            <button onclick="adjust('wives', 1, 4)" class="bg-green-200 px-2 rounded">+</button>
+          </div>
+        </div>
+        <div class="flex justify-between items-center">
+          <label>পুত্র</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjust('sons', -1)" class="bg-green-200 px-2 rounded">-</button>
+            <input id="sons" type="number" value="0" class="w-12 text-center border rounded">
+            <button onclick="adjust('sons', 1)" class="bg-green-200 px-2 rounded">+</button>
+          </div>
+        </div>
+        <div class="flex justify-between items-center">
+          <label>কন্যা</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjust('daughters', -1)" class="bg-green-200 px-2 rounded">-</button>
+            <input id="daughters" type="number" value="0" class="w-12 text-center border rounded">
+            <button onclick="adjust('daughters', 1)" class="bg-green-200 px-2 rounded">+</button>
+          </div>
+        </div>
       </div><h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mt-6 mb-4">সম্পদের বিবরণ</h2>
   <div class="flex justify-between items-center mb-6">
     <label>জমি (শতাংশ)</label>
@@ -67,36 +74,23 @@ function adjust(id, change, max = null) {
   input.value = Math.max(0, value);
 }
 
-window.onload = () => {
-  const container = document.getElementById('relatives-container');
-  relatives.forEach(r => {
-    const div = document.createElement('div');
-    div.className = "flex justify-between items-center";
-    div.innerHTML = `
-      <label>${r.label}</label>
-      <div class="flex items-center space-x-2">
-        <button onclick="adjust('${r.id}', -1${r.max ? ',' + r.max : ''})" class="bg-green-200 px-2 rounded">-</button>
-        <input id="${r.id}" type="number" value="0" class="w-12 text-center border rounded" readonly>
-        <button onclick="adjust('${r.id}', 1${r.max ? ',' + r.max : ''})" class="bg-green-200 px-2 rounded">+</button>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
+document.getElementById("year").textContent = new Date().getFullYear();
 
+let pieChart;
 function calculateInheritance() {
   const land = parseFloat(document.getElementById('land').value);
-  if (isNaN(land) || land <= 0) {
-    document.getElementById('inheritanceResult').innerHTML = '<p class="text-red-600">জমির পরিমাণ দিন।</p>';
-    return;
-  }
-
   const husbands = parseInt(document.getElementById('husband').value);
   const wives = parseInt(document.getElementById('wives').value);
   const sons = parseInt(document.getElementById('sons').value);
   const daughters = parseInt(document.getElementById('daughters').value);
 
-  let labels = [], shares = [];
+  if ((sons + daughters + husbands + wives) === 0 || isNaN(land) || land <= 0) {
+    document.getElementById('inheritanceResult').innerHTML = "<p class='text-red-600'>কমপক্ষে একজন আত্মীয় এবং জমির পরিমাণ দিন।</p>";
+    return;
+  }
+
+  let labels = [];
+  let shares = [];
   let html = '<table class="w-full text-left border mb-4"><thead><tr class="bg-green-200"><th class="p-1">আত্মীয়</th><th class="p-1">অংশ</th><th class="p-1">জমি</th></tr></thead><tbody>';
 
   let fixedShare = 0;
@@ -140,11 +134,20 @@ function calculateInheritance() {
   document.getElementById('downloadBtn').classList.remove('hidden');
 
   const ctx = document.getElementById('chartCanvas').getContext('2d');
-  if (window.pieChart) window.pieChart.destroy();
-  window.pieChart = new Chart(ctx, {
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(ctx, {
     type: 'pie',
-    data: { labels: labels, datasets: [{ data: shares, backgroundColor: ['#6EE7B7','#C4B5FD','#FDE68A','#FCA5A5','#93C5FD','#FBCFE8'] }] },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    data: {
+      labels: labels,
+      datasets: [{
+        data: shares,
+        backgroundColor: ['#6EE7B7','#C4B5FD','#FDE68A','#FCA5A5','#93C5FD','#FBCFE8']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
   });
 }
 
