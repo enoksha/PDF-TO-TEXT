@@ -13,39 +13,24 @@
     </div><div class="px-6 pt-4 pb-6">
   <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mb-4">আত্মীয়-স্বজনের তালিকা</h2>
   <div class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2">
-    <!-- Dynamic fields -->
-    <script>
-      const relatives = [
-        "স্বামী", "স্ত্রী", "পুত্র", "মৃত পুত্র", "কন্যা", "মৃত কন্যা",
-        "পিতা", "মাতা", "দাদা", "দাদি", "নানি",
-        "সহোদর ভাই", "সহোদর বোন",
-        "সৎ ভাই (বৈমাত্রেয়)", "সৎ বোন (বৈমাত্রেয়)",
-        "সৎ ভাই (বৈপিত্রেয়)", "সৎ বোন (বৈপিত্রেয়)",
-        "সহোদর ভাইয়ের পুত্র", "সৎ ভাই (বৈমাত্রেয়)-এর পুত্র",
-        "সহোদর ভাইয়ের পুত্রের পুত্র", "সৎ ভাই (বৈমাত্রেয়)-এর পুত্রের পুত্র",
-        "আপন চাচা", "সৎ চাচা",
-        "আপন চাচার পুত্র", "সৎ চাচার পুত্র",
-        "আপন চাচার পুত্রের পুত্র", "সৎ চাচার পুত্রের পুত্র",
-        "আপন চাচার পুত্রের পুত্রের পুত্র", "সৎ চাচার পুত্রের পুত্রের পুত্র"
-      ];
-
-      window.addEventListener('DOMContentLoaded', () => {
-        const container = document.querySelector('.grid');
-        relatives.forEach(id => {
-          const safeId = id.replace(/[ ()]/g, '_');
-          const block = document.createElement('div');
-          block.className = "flex justify-between items-center";
-          block.innerHTML = `
-            <label>\${id}</label>
-            <div class="flex items-center space-x-2">
-              <button onclick="adjust('\${safeId}', -1)" class="bg-green-200 px-2 rounded">-</button>
-              <input id="\${safeId}" type="number" value="0" class="w-12 text-center border rounded">
-              <button onclick="adjust('\${safeId}', 1)" class="bg-green-200 px-2 rounded">+</button>
-            </div>`;
-          container.appendChild(block);
-        });
-      });
-    </script>
+    <!-- Static Fields -->
+    <div class="flex justify-between items-center">
+      <label>পুত্র</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('sons', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="sons" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('sons', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <label>কন্যা</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('daughters', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="daughters" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('daughters', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <!-- আরও আত্মীয় এখানে চাইলে স্ট্যাটিকভাবে যোগ করা যাবে -->
   </div>
 
   <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mt-6 mb-4">সম্পদের বিবরণ</h2>
@@ -67,9 +52,14 @@ function adjust(id, change) {
 }
 
 function calculateInheritance() {
+  const sons = parseInt(document.getElementById('sons').value);
+  const daughters = parseInt(document.getElementById('daughters').value);
   const land = parseFloat(document.getElementById('land').value);
-  const sons = parseInt(document.getElementById('পুত্র')?.value || 0);
-  const daughters = parseInt(document.getElementById('কন্যা')?.value || 0);
+
+  if ((sons + daughters) === 0 || isNaN(land) || land <= 0) {
+    document.getElementById('inheritanceResult').innerHTML = "<p class='text-red-600'>কমপক্ষে একজন পুত্র বা কন্যা এবং জমির পরিমাণ দিন।</p>";
+    return;
+  }
 
   const totalPortion = sons * 2 + daughters * 1;
   let labels = [];
@@ -82,7 +72,7 @@ function calculateInheritance() {
       const value = (share * land).toFixed(2);
       html += `<tr><td class="p-1">পুত্র ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
       labels.push(`পুত্র ${i}`);
-      shares.push((share * land).toFixed(2));
+      shares.push(parseFloat(value));
     }
   }
   if (daughters > 0) {
@@ -91,7 +81,7 @@ function calculateInheritance() {
       const value = (share * land).toFixed(2);
       html += `<tr><td class="p-1">কন্যা ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
       labels.push(`কন্যা ${i}`);
-      shares.push((share * land).toFixed(2));
+      shares.push(parseFloat(value));
     }
   }
 
