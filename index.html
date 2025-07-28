@@ -62,10 +62,14 @@
     </div>
   </div>
 
-  <div class="mt-6">
-    <button onclick="calculateInheritance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">ফলাফল</button>
-    <div id="inheritanceResult" class="mt-4 p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
+  <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mt-6 mb-4">সম্পদের বিবরণ</h2>
+  <div class="flex justify-between items-center mb-6">
+    <label>জমি (শতাংশ)</label>
+    <input id="land" type="number" value="0" class="w-24 text-center border rounded">
   </div>
+
+  <button onclick="calculateInheritance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">ফলাফল</button>
+  <div id="inheritanceResult" class="mt-4 p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
 </div>
 
   </div><script>
@@ -82,11 +86,12 @@ function calculateInheritance() {
   const daughters = parseInt(document.getElementById('daughters').value);
   const father = parseInt(document.getElementById('father').value);
   const mother = parseInt(document.getElementById('mother').value);
+  const land = parseFloat(document.getElementById('land').value);
 
   let result = '<ul class="list-disc pl-5">';
 
   if (husband > 0) result += `<li>স্বামী: মোট উত্তরাধিকার ২৫%</li>`;
-  if (wives > 0) result += `<li>স্ত্রী ${wives} জন: মোট ${wives * (1/8 * 100)}%</li>`;
+  if (wives > 0) result += `<li>স্ত্রী ${wives} জন: মোট ${(wives * 1/8 * 100).toFixed(2)}%</li>`;
   if (father) result += `<li>পিতা: ১৬.৬৭%</li>`;
   if (mother) result += `<li>মাতা: ১৬.৬৭%</li>`;
 
@@ -97,6 +102,11 @@ function calculateInheritance() {
   }
 
   result += '</ul>';
+
+  if (!isNaN(land) && land > 0) {
+    result += `<p class='mt-4 font-semibold'>মোট জমি: ${land} শতাংশ</p>`;
+  }
+
   document.getElementById('inheritanceResult').innerHTML = result;
 }
 </script></body>
