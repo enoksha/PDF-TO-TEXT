@@ -17,17 +17,17 @@
     <div class="flex justify-between items-center">
       <label>স্বামী</label>
       <div class="flex items-center space-x-2">
-        <button onclick="adjust('husband', -1)" class="bg-green-200 px-2 rounded">-</button>
-        <input id="husband" type="number" value="0" class="w-12 text-center border rounded">
-        <button onclick="adjust('husband', 1)" class="bg-green-200 px-2 rounded">+</button>
+        <button onclick="adjustMax('husband', -1, 1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="husband" type="number" value="0" class="w-12 text-center border rounded" readonly>
+        <button onclick="adjustMax('husband', 1, 1)" class="bg-green-200 px-2 rounded">+</button>
       </div>
     </div>
     <div class="flex justify-between items-center">
       <label>স্ত্রী</label>
       <div class="flex items-center space-x-2">
-        <button onclick="adjust('wives', -1)" class="bg-green-200 px-2 rounded">-</button>
-        <input id="wives" type="number" value="0" class="w-12 text-center border rounded">
-        <button onclick="adjust('wives', 1)" class="bg-green-200 px-2 rounded">+</button>
+        <button onclick="adjustMax('wives', -1, 4)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="wives" type="number" value="0" class="w-12 text-center border rounded" readonly>
+        <button onclick="adjustMax('wives', 1, 4)" class="bg-green-200 px-2 rounded">+</button>
       </div>
     </div>
     <div class="flex justify-between items-center">
@@ -66,6 +66,12 @@ function adjust(id, change) {
   input.value = Math.max(0, value);
 }
 
+function adjustMax(id, change, max) {
+  const input = document.getElementById(id);
+  let value = parseInt(input.value) + change;
+  input.value = Math.max(0, Math.min(max, value));
+}
+
 function calculateInheritance() {
   const husbands = parseInt(document.getElementById('husband').value);
   const wives = parseInt(document.getElementById('wives').value);
@@ -84,7 +90,7 @@ function calculateInheritance() {
 
   let fixedShare = 0;
   if (husbands > 0) fixedShare += 0.25;
-  if (wives > 0) fixedShare += 0.125 * wives;
+  if (wives > 0) fixedShare += 0.125;
 
   let remaining = 1 - fixedShare;
 
@@ -96,11 +102,13 @@ function calculateInheritance() {
     shares.push(parseFloat(value));
   }
   if (wives > 0) {
-    const share = 0.125 * wives;
-    const value = (share * land).toFixed(2);
-    html += `<tr><td class="p-1">স্ত্রী (${wives} জন)</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
-    labels.push("স্ত্রী");
-    shares.push(parseFloat(value));
+    const individualShare = 0.125 / wives;
+    for (let i = 1; i <= wives; i++) {
+      const value = (individualShare * land).toFixed(2);
+      html += `<tr><td class="p-1">স্ত্রী ${i}</td><td class="p-1">${individualShare.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+      labels.push(`স্ত্রী ${i}`);
+      shares.push(parseFloat(value));
+    }
   }
 
   const totalPortion = sons * 2 + daughters * 1;
