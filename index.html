@@ -1,144 +1,103 @@
-<!DOCTYPE html>
-<html lang="bn">
+<!DOCTYPE html><html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>বাংলা PDF থেকে টেক্সট কনভার্টার</title>
-    <link href="https://fonts.googleapis.com/css2?family=Siyam+Rupali&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Siyam Rupali', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-            text-align: center;
-        }
-        h1 {
-            color: #333;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input[type="file"] {
-            margin: 20px 0;
-        }
-        button {
-            background-color: #28a745;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            backgroundCDC: #218838;
-        }
-        #output {
-            margin-top: 20px;
-            padding: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            white-space: pre-wrap;
-            text-align: left;
-        }
-        #preview {
-            margin-top: 20px;
-        }
-        canvas {
-            border: 1px solid #ccc;
-            max-width: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>উত্তরাধিকার হিসাব</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <h1>বাংলা PDF থেকে টেক্সট কনভার্টার</h1>
-        <p>আপনার PDF ফাইল আপলোড করুন এবং বাংলা টেক্সট বের করুন</p>
-        <input type="file" id="pdfFile" accept=".pdf">
-        <button onclick="convertPDF()">টেক্সট বের করুন</button>
-        <button onclick="copyText()">টেক্সট কপি করুন</button>
-        <button onclick="downloadText()">টেক্সট ডাউনলোড করুন</button>
-        <div id="preview"></div>
-        <div id="output">এখানে বের করা টেক্সট দেখানো হবে...</div>
+<body class="bg-green-100 min-h-screen text-gray-800">
+  <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg mt-4 mb-10">
+    <div class="bg-green-600 text-white text-center py-4 rounded-t-xl">
+      <h1 class="text-2xl font-bold">উত্তরাধিকার</h1>
+    </div><div class="px-6 pt-4 pb-6">
+  <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mb-4">জীবিত আত্মীয়-স্বজনের তালিকা (মুসলিম)</h2>
+  <div class="space-y-3">
+    <div class="flex justify-between items-center">
+      <label>স্বামী</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('husband', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="husband" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('husband', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
     </div>
+    <div class="flex justify-between items-center">
+      <label>স্ত্রী</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('wives', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="wives" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('wives', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <label>পুত্র</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('sons', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="sons" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('sons', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <label>কন্যা</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('daughters', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="daughters" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('daughters', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <label>পিতা</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('father', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="father" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('father', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <label>মাতা</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('mother', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="mother" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('mother', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- pdf.js লাইব্রেরি -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
-    <script>
-        // pdf.js কনফিগারেশন
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.worker.min.js';
+  <div class="mt-6">
+    <button onclick="calculateInheritance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">ফলাফল</button>
+    <div id="inheritanceResult" class="mt-4 p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
+  </div>
+</div>
 
-        async function convertPDF() {
-            const fileInput = document.getElementById('pdfFile');
-            const outputDiv = document.getElementById('output');
-            const previewDiv = document.getElementById('preview');
+  </div><script>
+function adjust(id, change) {
+  const input = document.getElementById(id);
+  let value = parseInt(input.value) + change;
+  input.value = Math.max(0, value);
+}
 
-            if (!fileInput.files.length) {
-                alert('দয়া করে একটি PDF ফাইল নির্বাচন করুন!');
-                return;
-            }
+function calculateInheritance() {
+  const husband = parseInt(document.getElementById('husband').value);
+  const wives = parseInt(document.getElementById('wives').value);
+  const sons = parseInt(document.getElementById('sons').value);
+  const daughters = parseInt(document.getElementById('daughters').value);
+  const father = parseInt(document.getElementById('father').value);
+  const mother = parseInt(document.getElementById('mother').value);
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
+  let result = '<ul class="list-disc pl-5">';
 
-            reader.onload = async function () {
-                const typedArray = new Uint8Array(this.result);
-                const pdf = await pdfjsLib.getDocument(typedArray).promise;
-                let text = '';
+  if (husband > 0) result += `<li>স্বামী: মোট উত্তরাধিকার ২৫%</li>`;
+  if (wives > 0) result += `<li>স্ত্রী ${wives} জন: মোট ${wives * (1/8 * 100)}%</li>`;
+  if (father) result += `<li>পিতা: ১৬.৬৭%</li>`;
+  if (mother) result += `<li>মাতা: ১৬.৬৭%</li>`;
 
-                // প্রতিটি পেজ থেকে টেক্সট বের করা
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const content = await page.getTextContent();
-                    content.items.forEach(item => {
-                        text += item.str + '\n';
-                    });
+  if (sons + daughters > 0) {
+    const totalPortion = sons * 2 + daughters * 1;
+    if (sons > 0) result += `<li>পুত্র (${sons}): ${(2/totalPortion*100).toFixed(2)}% করে</li>`;
+    if (daughters > 0) result += `<li>কন্যা (${daughters}): ${(1/totalPortion*100).toFixed(2)}% করে</li>`;
+  }
 
-                    // PDF প্রিভিউ রেন্ডার করা
-                    const viewport = page.getViewport({ scale: 1 });
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-                    previewDiv.appendChild(canvas);
-
-                    await page.render({
-                        canvasContext: context,
-                        viewport: viewport
-                    }).promise;
-                }
-
-                outputDiv.textContent = text || 'কোনো টেক্সট পাওয়া যায়নি!';
-            };
-
-            reader.readAsArrayBuffer(file);
-        }
-
-        function copyText() {
-            const outputDiv = document.getElementById('output');
-            const text = outputDiv.textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('টেক্সট কপি করা হয়েছে!');
-            });
-        }
-
-        function downloadText() {
-            const outputDiv = document.getElementById('output');
-            const text = outputDiv.textContent;
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'converted_text.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    </script>
-</body>
+  result += '</ul>';
+  document.getElementById('inheritanceResult').innerHTML = result;
+}
+</script></body>
 </html>
