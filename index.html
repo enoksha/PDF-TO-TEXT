@@ -4,6 +4,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>উত্তরাধিকার হিসাব</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-green-100 min-h-screen text-gray-800">
   <div class="max-w-md mx-auto bg-white rounded-xl shadow-lg mt-4 mb-10">
@@ -12,22 +13,6 @@
     </div><div class="px-6 pt-4 pb-6">
   <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mb-4">জীবিত আত্মীয়-স্বজনের তালিকা (মুসলিম)</h2>
   <div class="space-y-3">
-    <div class="flex justify-between items-center">
-      <label>স্বামী</label>
-      <div class="flex items-center space-x-2">
-        <button onclick="adjust('husband', -1)" class="bg-green-200 px-2 rounded">-</button>
-        <input id="husband" type="number" value="0" class="w-12 text-center border rounded">
-        <button onclick="adjust('husband', 1)" class="bg-green-200 px-2 rounded">+</button>
-      </div>
-    </div>
-    <div class="flex justify-between items-center">
-      <label>স্ত্রী</label>
-      <div class="flex items-center space-x-2">
-        <button onclick="adjust('wives', -1)" class="bg-green-200 px-2 rounded">-</button>
-        <input id="wives" type="number" value="0" class="w-12 text-center border rounded">
-        <button onclick="adjust('wives', 1)" class="bg-green-200 px-2 rounded">+</button>
-      </div>
-    </div>
     <div class="flex justify-between items-center">
       <label>পুত্র</label>
       <div class="flex items-center space-x-2">
@@ -44,22 +29,6 @@
         <button onclick="adjust('daughters', 1)" class="bg-green-200 px-2 rounded">+</button>
       </div>
     </div>
-    <div class="flex justify-between items-center">
-      <label>পিতা</label>
-      <div class="flex items-center space-x-2">
-        <button onclick="adjust('father', -1)" class="bg-green-200 px-2 rounded">-</button>
-        <input id="father" type="number" value="0" class="w-12 text-center border rounded">
-        <button onclick="adjust('father', 1)" class="bg-green-200 px-2 rounded">+</button>
-      </div>
-    </div>
-    <div class="flex justify-between items-center">
-      <label>মাতা</label>
-      <div class="flex items-center space-x-2">
-        <button onclick="adjust('mother', -1)" class="bg-green-200 px-2 rounded">-</button>
-        <input id="mother" type="number" value="0" class="w-12 text-center border rounded">
-        <button onclick="adjust('mother', 1)" class="bg-green-200 px-2 rounded">+</button>
-      </div>
-    </div>
   </div>
 
   <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mt-6 mb-4">সম্পদের বিবরণ</h2>
@@ -70,6 +39,7 @@
 
   <button onclick="calculateInheritance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">ফলাফল</button>
   <div id="inheritanceResult" class="mt-4 p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
+  <canvas id="chartCanvas" class="mt-6"></canvas>
 </div>
 
   </div><script>
@@ -80,34 +50,56 @@ function adjust(id, change) {
 }
 
 function calculateInheritance() {
-  const husband = parseInt(document.getElementById('husband').value);
-  const wives = parseInt(document.getElementById('wives').value);
   const sons = parseInt(document.getElementById('sons').value);
   const daughters = parseInt(document.getElementById('daughters').value);
-  const father = parseInt(document.getElementById('father').value);
-  const mother = parseInt(document.getElementById('mother').value);
   const land = parseFloat(document.getElementById('land').value);
 
-  let result = '<ul class="list-disc pl-5">';
+  const totalPortion = sons * 2 + daughters * 1;
+  let members = [];
+  let labels = [];
+  let shares = [];
 
-  if (husband > 0) result += `<li>স্বামী: মোট উত্তরাধিকার ২৫%</li>`;
-  if (wives > 0) result += `<li>স্ত্রী ${wives} জন: মোট ${(wives * 1/8 * 100).toFixed(2)}%</li>`;
-  if (father) result += `<li>পিতা: ১৬.৬৭%</li>`;
-  if (mother) result += `<li>মাতা: ১৬.৬৭%</li>`;
+  let html = '<table class="w-full text-left border mb-4"><thead><tr class="bg-green-200"><th class="p-1">আত্মীয়</th><th class="p-1">অংশ</th><th class="p-1">জমি</th></tr></thead><tbody>';
 
-  if (sons + daughters > 0) {
-    const totalPortion = sons * 2 + daughters * 1;
-    if (sons > 0) result += `<li>পুত্র (${sons}): ${(2/totalPortion*100).toFixed(2)}% করে</li>`;
-    if (daughters > 0) result += `<li>কন্যা (${daughters}): ${(1/totalPortion*100).toFixed(2)}% করে</li>`;
+  if (sons > 0) {
+    const share = 2 / totalPortion;
+    for (let i = 1; i <= sons; i++) {
+      const value = (share * land).toFixed(2);
+      html += `<tr><td class="p-1">পুত্র ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+      labels.push(`পুত্র ${i}`);
+      shares.push((share * land).toFixed(2));
+    }
+  }
+  if (daughters > 0) {
+    const share = 1 / totalPortion;
+    for (let i = 1; i <= daughters; i++) {
+      const value = (share * land).toFixed(2);
+      html += `<tr><td class="p-1">কন্যা ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+      labels.push(`কন্যা ${i}`);
+      shares.push((share * land).toFixed(2));
+    }
   }
 
-  result += '</ul>';
+  html += '</tbody></table>';
+  document.getElementById('inheritanceResult').innerHTML = html;
 
-  if (!isNaN(land) && land > 0) {
-    result += `<p class='mt-4 font-semibold'>মোট জমি: ${land} শতাংশ</p>`;
-  }
-
-  document.getElementById('inheritanceResult').innerHTML = result;
+  const ctx = document.getElementById('chartCanvas').getContext('2d');
+  if (window.pieChart) window.pieChart.destroy();
+  window.pieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'জমির বণ্টন',
+        data: shares,
+        backgroundColor: ['#6EE7B7', '#C4B5FD', '#FDE68A', '#FCA5A5', '#93C5FD', '#FBCFE8']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
 }
 </script></body>
 </html>
