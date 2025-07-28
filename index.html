@@ -82,6 +82,12 @@ function calculateInheritance() {
   let shares = [];
   let html = '<table class="w-full text-left border mb-4"><thead><tr class="bg-green-200"><th class="p-1">আত্মীয়</th><th class="p-1">অংশ</th><th class="p-1">জমি</th></tr></thead><tbody>';
 
+  let fixedShare = 0;
+  if (husbands > 0) fixedShare += 0.25;
+  if (wives > 0) fixedShare += 0.125 * wives;
+
+  let remaining = 1 - fixedShare;
+
   if (husbands > 0) {
     const share = 0.25;
     const value = (share * land).toFixed(2);
@@ -90,30 +96,33 @@ function calculateInheritance() {
     shares.push(parseFloat(value));
   }
   if (wives > 0) {
-    const share = 0.125;
-    const value = ((share * wives) * land).toFixed(2);
-    html += `<tr><td class="p-1">স্ত্রী (${wives} জন)</td><td class="p-1">${(share * wives).toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+    const share = 0.125 * wives;
+    const value = (share * land).toFixed(2);
+    html += `<tr><td class="p-1">স্ত্রী (${wives} জন)</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
     labels.push("স্ত্রী");
     shares.push(parseFloat(value));
   }
 
   const totalPortion = sons * 2 + daughters * 1;
-  if (sons > 0) {
-    const share = 2 / totalPortion;
-    for (let i = 1; i <= sons; i++) {
-      const value = (share * land).toFixed(2);
-      html += `<tr><td class="p-1">পুত্র ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
-      labels.push(`পুত্র ${i}`);
-      shares.push(parseFloat(value));
+  if (totalPortion > 0) {
+    const unitShare = remaining / totalPortion;
+    if (sons > 0) {
+      for (let i = 1; i <= sons; i++) {
+        const share = unitShare * 2;
+        const value = (share * land).toFixed(2);
+        html += `<tr><td class="p-1">পুত্র ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+        labels.push(`পুত্র ${i}`);
+        shares.push(parseFloat(value));
+      }
     }
-  }
-  if (daughters > 0) {
-    const share = 1 / totalPortion;
-    for (let i = 1; i <= daughters; i++) {
-      const value = (share * land).toFixed(2);
-      html += `<tr><td class="p-1">কন্যা ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
-      labels.push(`কন্যা ${i}`);
-      shares.push(parseFloat(value));
+    if (daughters > 0) {
+      for (let i = 1; i <= daughters; i++) {
+        const share = unitShare;
+        const value = (share * land).toFixed(2);
+        html += `<tr><td class="p-1">কন্যা ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+        labels.push(`কন্যা ${i}`);
+        shares.push(parseFloat(value));
+      }
     }
   }
 
