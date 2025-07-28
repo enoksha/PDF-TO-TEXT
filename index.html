@@ -58,8 +58,10 @@
   <button onclick="calculateInheritance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">ফলাফল</button>
   <button onclick="downloadPDF()" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 mt-3">PDF ডাউনলোড করুন</button>
 
-  <div id="inheritanceResult" class="mt-4 p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
-  <canvas id="chartCanvas" class="mt-6"></canvas>
+  <div id="resultSection" class="mt-4">
+    <div id="inheritanceResult" class="p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
+    <canvas id="chartCanvas" class="mt-6"></canvas>
+  </div>
 </div>
 
   </main>  <!-- Footer -->  <footer class="bg-gray-900 text-white text-sm text-center py-6 mt-6">
@@ -71,17 +73,100 @@ function adjust(id, change) {
   let value = parseInt(input.value) + change;
   input.value = Math.max(0, value);
 }
-
 function adjustMax(id, change, max) {
   const input = document.getElementById(id);
   let value = parseInt(input.value) + change;
   input.value = Math.max(0, Math.min(max, value));
 }
-
 document.getElementById("year").textContent = new Date().getFullYear();
 
+let pieChart;
+function calculateInheritance() {
+  const husbands = parseInt(document.getElementById('husband').value);
+  const wives = parseInt(document.getElementById('wives').value);
+  const sons = parseInt(document.getElementById('sons').value);
+  const daughters = parseInt(document.getElementById('daughters').value);
+  const land = parseFloat(document.getElementById('land').value);
+
+  if ((sons + daughters + husbands + wives) === 0 || isNaN(land) || land <= 0) {
+    document.getElementById('inheritanceResult').innerHTML = "<p class='text-red-600'>কমপক্ষে একজন আত্মীয় এবং জমির পরিমাণ দিন।</p>";
+    return;
+  }
+
+  let labels = [];
+  let shares = [];
+  let html = '<table class="w-full text-left border mb-4"><thead><tr class="bg-green-200"><th class="p-1">আত্মীয়</th><th class="p-1">অংশ</th><th class="p-1">জমি</th></tr></thead><tbody>';
+
+  let fixedShare = 0;
+  if (husbands > 0) fixedShare += 0.25;
+  if (wives > 0) fixedShare += 0.125;
+
+  let remaining = 1 - fixedShare;
+
+  if (husbands > 0) {
+    const share = 0.25;
+    const value = (share * land).toFixed(2);
+    html += `<tr><td class="p-1">স্বামী</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+    labels.push("স্বামী");
+    shares.push(parseFloat(value));
+  }
+  if (wives > 0) {
+    const individualShare = 0.125 / wives;
+    for (let i = 1; i <= wives; i++) {
+      const value = (individualShare * land).toFixed(2);
+      html += `<tr><td class="p-1">স্ত্রী ${i}</td><td class="p-1">${individualShare.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+      labels.push(`স্ত্রী ${i}`);
+      shares.push(parseFloat(value));
+    }
+  }
+
+  const totalPortion = sons * 2 + daughters * 1;
+  if (totalPortion > 0) {
+    const unitShare = remaining / totalPortion;
+    if (sons > 0) {
+      for (let i = 1; i <= sons; i++) {
+        const share = unitShare * 2;
+        const value = (share * land).toFixed(2);
+        html += `<tr><td class="p-1">পুত্র ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+        labels.push(`পুত্র ${i}`);
+        shares.push(parseFloat(value));
+      }
+    }
+    if (daughters > 0) {
+      for (let i = 1; i <= daughters; i++) {
+        const share = unitShare;
+        const value = (share * land).toFixed(2);
+        html += `<tr><td class="p-1">কন্যা ${i}</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+        labels.push(`কন্যা ${i}`);
+        shares.push(parseFloat(value));
+      }
+    }
+  }
+
+  html += '</tbody></table>';
+  document.getElementById('inheritanceResult').innerHTML = html;
+
+  const ctx = document.getElementById('chartCanvas').getContext('2d');
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'জমির বণ্টন',
+        data: shares,
+        backgroundColor: ['#6EE7B7', '#C4B5FD', '#FDE68A', '#FCA5A5', '#93C5FD', '#FBCFE8']
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+}
+
 function downloadPDF() {
-  const element = document.getElementById("inheritanceResult");
+  const element = document.getElementById("resultSection");
   const opt = {
     margin:       0.5,
     filename:     'uttoradhikar_result.pdf',
@@ -91,7 +176,5 @@ function downloadPDF() {
   };
   html2pdf().set(opt).from(element).save();
 }
-</script><script>
-// calculateInheritance function remains from previous step and is working
 </script></body>
 </html>
