@@ -15,6 +15,22 @@
   <div class="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2">
     <!-- Static Fields -->
     <div class="flex justify-between items-center">
+      <label>স্বামী</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('husband', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="husband" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('husband', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
+      <label>স্ত্রী</label>
+      <div class="flex items-center space-x-2">
+        <button onclick="adjust('wives', -1)" class="bg-green-200 px-2 rounded">-</button>
+        <input id="wives" type="number" value="0" class="w-12 text-center border rounded">
+        <button onclick="adjust('wives', 1)" class="bg-green-200 px-2 rounded">+</button>
+      </div>
+    </div>
+    <div class="flex justify-between items-center">
       <label>পুত্র</label>
       <div class="flex items-center space-x-2">
         <button onclick="adjust('sons', -1)" class="bg-green-200 px-2 rounded">-</button>
@@ -30,7 +46,6 @@
         <button onclick="adjust('daughters', 1)" class="bg-green-200 px-2 rounded">+</button>
       </div>
     </div>
-    <!-- আরও আত্মীয় এখানে চাইলে স্ট্যাটিকভাবে যোগ করা যাবে -->
   </div>
 
   <h2 class="text-lg font-semibold text-purple-700 border-b pb-2 mt-6 mb-4">সম্পদের বিবরণ</h2>
@@ -52,20 +67,37 @@ function adjust(id, change) {
 }
 
 function calculateInheritance() {
+  const husbands = parseInt(document.getElementById('husband').value);
+  const wives = parseInt(document.getElementById('wives').value);
   const sons = parseInt(document.getElementById('sons').value);
   const daughters = parseInt(document.getElementById('daughters').value);
   const land = parseFloat(document.getElementById('land').value);
 
-  if ((sons + daughters) === 0 || isNaN(land) || land <= 0) {
-    document.getElementById('inheritanceResult').innerHTML = "<p class='text-red-600'>কমপক্ষে একজন পুত্র বা কন্যা এবং জমির পরিমাণ দিন।</p>";
+  if ((sons + daughters + husbands + wives) === 0 || isNaN(land) || land <= 0) {
+    document.getElementById('inheritanceResult').innerHTML = "<p class='text-red-600'>কমপক্ষে একজন আত্মীয় এবং জমির পরিমাণ দিন।</p>";
     return;
   }
 
-  const totalPortion = sons * 2 + daughters * 1;
   let labels = [];
   let shares = [];
   let html = '<table class="w-full text-left border mb-4"><thead><tr class="bg-green-200"><th class="p-1">আত্মীয়</th><th class="p-1">অংশ</th><th class="p-1">জমি</th></tr></thead><tbody>';
 
+  if (husbands > 0) {
+    const share = 0.25;
+    const value = (share * land).toFixed(2);
+    html += `<tr><td class="p-1">স্বামী</td><td class="p-1">${share.toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+    labels.push("স্বামী");
+    shares.push(parseFloat(value));
+  }
+  if (wives > 0) {
+    const share = 0.125;
+    const value = ((share * wives) * land).toFixed(2);
+    html += `<tr><td class="p-1">স্ত্রী (${wives} জন)</td><td class="p-1">${(share * wives).toFixed(3)}</td><td class="p-1">${value}</td></tr>`;
+    labels.push("স্ত্রী");
+    shares.push(parseFloat(value));
+  }
+
+  const totalPortion = sons * 2 + daughters * 1;
   if (sons > 0) {
     const share = 2 / totalPortion;
     for (let i = 1; i <= sons; i++) {
