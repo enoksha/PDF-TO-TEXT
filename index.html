@@ -56,6 +56,7 @@
 
   <button onclick="calculateInheritance()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700">ফলাফল</button>
   <button id="downloadBtn" onclick="downloadPDF()" class="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 mt-3 hidden">PDF ডাউনলোড করুন</button>
+  <button onclick="resetForm()" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 mt-3">রিসেট করুন</button>
 
   <div id="resultSection" class="mt-4">
     <div id="inheritanceResult" class="p-3 bg-purple-50 rounded text-sm text-purple-800 border border-purple-200"></div>
@@ -72,6 +73,14 @@ function adjust(id, change, max = null) {
   let value = parseInt(input.value) + change;
   if (max !== null) value = Math.min(max, value);
   input.value = Math.max(0, value);
+}
+
+function resetForm() {
+  const ids = ['husband','wives','sons','daughters','land'];
+  ids.forEach(id => document.getElementById(id).value = 0);
+  document.getElementById('inheritanceResult').innerHTML = '';
+  document.getElementById('downloadBtn').classList.add('hidden');
+  if (window.pieChart) window.pieChart.destroy();
 }
 
 document.getElementById("year").textContent = new Date().getFullYear();
